@@ -84,3 +84,104 @@ if st.button("Run Trust Discovery"):
                 "This output is discovery-level only. "
                 "No conclusions are drawn without senior human review."
             )
+# ================================
+# Interpretation & Judgement Layer
+# ================================
+
+def categorise_signals(signals: dict) -> dict:
+    """
+    Light-weight categorisation to support senior human judgement.
+    No automated conclusions are made.
+    """
+    categories = {
+        "trust_indicators": [],
+        "claims_detected": [],
+        "missing_or_ambiguous": []
+    }
+
+    if signals.get("title"):
+        categories["trust_indicators"].append("Page has a clear title")
+
+    if signals.get("h1"):
+        categories["trust_indicators"].append("Primary H1 present")
+
+    if signals.get("trust_links"):
+        categories["trust_indicators"].append(
+            f"{len(signals['trust_links'])} trust-related links detected"
+        )
+    else:
+        categories["missing_or_ambiguous"].append(
+            "No obvious trust or policy links detected"
+        )
+
+    if signals.get("claims"):
+        categories["claims_detected"].extend(signals["claims"])
+    else:
+        categories["claims_detected"].append(
+            "No explicit claims detected at discovery level"
+        )
+
+    return categories
+
+
+def judgement_prompts(categories: dict) -> list:
+    """
+    Questions intended for senior QA / risk judgement.
+    """
+    prompts = []
+
+    if categories["trust_indicators"]:
+        prompts.append(
+            "Do the detected trust indicators meaningfully support user confidence?"
+        )
+
+    if categories["claims_detected"]:
+        prompts.append(
+            "Are any claims present that would require substantiation or testing?"
+        )
+
+    if categories["missing_or_ambiguous"]:
+        prompts.append(
+            "Are there omissions that increase user or regulatory risk?"
+        )
+
+    prompts.append(
+        "Based on discovery alone, what areas require deeper inspection?"
+    )
+
+    return prompts
+
+
+# ================================
+# Enhanced UI Output
+# ================================
+
+if "signals" in locals() and signals:
+
+    st.markdown("---")
+    st.subheader("Discovery Interpretation")
+
+    categories = categorise_signals(signals)
+
+    with st.expander("Trust Indicators", expanded=True):
+        for item in categories["trust_indicators"]:
+            st.markdown(f"- {item}")
+
+    with st.expander("Claims & Assertions"):
+        for item in categories["claims_detected"]:
+            st.markdown(f"- {item}")
+
+    with st.expander("Missing / Ambiguous Signals"):
+        for item in categories["missing_or_ambiguous"]:
+            st.markdown(f"- {item}")
+
+    st.markdown("---")
+    st.subheader("Senior Judgement Prompts")
+
+    for i, prompt in enumerate(judgement_prompts(categories), start=1):
+        st.markdown(f"**{i}.** {prompt}")
+
+    st.info(
+        "This tool supports professional judgement. "
+        "No automated conclusions or risk decisions are made."
+    )
