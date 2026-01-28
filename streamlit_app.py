@@ -185,3 +185,67 @@ if "signals" in locals() and signals:
         "This tool supports professional judgement. "
         "No automated conclusions or risk decisions are made."
     )
+    # ================================
+# Human-Centred Presentation Layer
+# ================================
+
+if "signals" in locals() and signals:
+
+    st.markdown("---")
+    st.header("🔍 Trust Discovery Summary")
+
+    summary_points = []
+
+    if signals.get("title"):
+        summary_points.append("✔ Page has a clear title")
+
+    if signals.get("h1"):
+        summary_points.append("✔ Primary page heading detected")
+
+    if signals.get("trust_links"):
+        summary_points.append(f"✔ {len(signals['trust_links'])} trust / policy links present")
+
+    if not summary_points:
+        summary_points.append("⚠ No obvious trust indicators detected at discovery level")
+
+    for point in summary_points:
+        st.write(point)
+
+    st.markdown("---")
+    st.header("📄 Page Claims & Assertions")
+
+    if signals.get("claims"):
+        for claim in signals["claims"]:
+            st.write(f"– {claim}")
+    else:
+        st.write("– No explicit claims detected at discovery level")
+
+    st.markdown("---")
+    st.header("⚠ Gaps & Ambiguities")
+
+    gaps = []
+
+    if not signals.get("trust_links"):
+        gaps.append("No visible trust, contact, or policy links")
+
+    if not signals.get("claims"):
+        gaps.append("No explicit claims detected (may still exist deeper in content)")
+
+    if gaps:
+        for gap in gaps:
+            st.write(f"– {gap}")
+    else:
+        st.write("– No immediate gaps detected at discovery level")
+
+    st.markdown("---")
+    st.header("🧠 Questions for Human Judgement")
+
+    st.write("1. Do the detected trust indicators meaningfully support user confidence?")
+    st.write("2. Are there claims that would require validation or testing?")
+    st.write("3. Are there omissions that increase regulatory, user, or reputational risk?")
+    st.write("4. What areas require deeper inspection beyond discovery?")
+
+    st.info(
+        "This tool provides discovery-level intelligence only. "
+        "All conclusions require senior human judgement."
+    )
